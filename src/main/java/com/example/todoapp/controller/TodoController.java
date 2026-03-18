@@ -16,12 +16,12 @@ public class TodoController {
         this.todoRepository = todoRepository;
     }
 
-    @GetMapping
+    @GetMapping("/")
     public List<Todo> getTodos() {
         return todoRepository.findAll();
     }
 
-    @PostMapping
+    @PostMapping("/")
     public Todo addTodo(@RequestBody Todo todo) {
         return todoRepository.save(todo);
     }
