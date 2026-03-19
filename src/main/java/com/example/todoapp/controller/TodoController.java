@@ -1,7 +1,8 @@
 package com.example.todoapp.controller;
 
-import com.example.todoapp.model.Todo;
-import com.example.todoapp.repository.TodoRepository;
+import com.example.todoapp.entity.Todo;
+import com.example.todoapp.service.TodoService;
+import com.example.todoapp.util.CommonResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,31 +11,55 @@ import java.util.List;
 @RequestMapping("/api/todos")
 @CrossOrigin(origins = "http://localhost:5173")
 public class TodoController {
-    private final TodoRepository todoRepository;
+    private final TodoService todoService;
 
-    public TodoController(TodoRepository todoRepository) {
-        this.todoRepository = todoRepository;
+    public TodoController(TodoService todoService) {
+        this.todoService = todoService;
     }
 
     @GetMapping("/")
-    public List<Todo> getTodos() {
-        return todoRepository.findAll();
+    public CommonResponse<List<Todo>> getTodos() {
+        List<Todo> todos = todoService.getAllTodos();
+
+        return new CommonResponse<>(
+                true,
+                "Todos fetched successfully",
+                todos
+        );
     }
 
     @PostMapping("/")
-    public Todo addTodo(@RequestBody Todo todo) {
-        return todoRepository.save(todo);
+    public CommonResponse<Todo> addTodo(@RequestBody Todo todo) {
+        Todo saved = todoService.createTodo(todo);
+
+        return new CommonResponse<>(
+                true,
+                "Todo created successfully",
+                saved
+        );
     }
 
     @PutMapping("/{id}")
-    public Todo updateTodo(@PathVariable String id, @RequestBody Todo todo) {
-        todo.setId(id);
-        return todoRepository.save(todo);
+    public CommonResponse<Todo> updateTodo(@PathVariable String id, @RequestBody Todo todo) {
+        Todo updated = todoService.updateTodo(id, todo);
+
+        return new CommonResponse<>(
+                true,
+                "Todo Updated successfully",
+                updated
+        );
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTodo(@PathVariable String id) {
-        todoRepository.deleteById(id);
+    public CommonResponse<Void> deleteTodo(@PathVariable String id) {
+        todoService.deleteTodo(id);
+
+        return new CommonResponse<>(
+                true,
+                "Todo deleted Successfully",
+                null
+        );
     }
+
 
 }
