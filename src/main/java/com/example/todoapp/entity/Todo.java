@@ -2,6 +2,7 @@ package com.example.todoapp.entity;
 
 import com.example.todoapp.enums.Priority;
 import com.example.todoapp.enums.Status;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -39,7 +40,8 @@ public class Todo {
 
     private String listCategory;
 
-    private boolean isPinned;
+    @JsonProperty("isPinned")
+    private boolean pinned;
 
     @Column(name = "reminder_time")
     private LocalDateTime reminder;

@@ -2,6 +2,7 @@ package com.example.todoapp.dto;
 
 import com.example.todoapp.enums.Priority;
 import com.example.todoapp.enums.Status;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -26,7 +27,8 @@ public class TodoRequestDTO {
 
     private String listCategory;
 
-    private boolean isPinned;
+    @JsonProperty("isPinned")
+    private boolean pinned;
 
     private LocalDateTime reminder;
 
