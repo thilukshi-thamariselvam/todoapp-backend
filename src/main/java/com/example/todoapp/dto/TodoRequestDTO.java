@@ -3,6 +3,7 @@ package com.example.todoapp.dto;
 import com.example.todoapp.enums.Priority;
 import com.example.todoapp.enums.Status;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class TodoRequestDTO {
     @Size(max = 500)
     private String description;
 
+    @FutureOrPresent(message = "Due date must be today or in the future")
     private LocalDateTime dueDate;
 
     private Priority priority;

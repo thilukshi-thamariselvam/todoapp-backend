@@ -41,6 +41,7 @@ public class Todo {
     private String listCategory;
 
     @JsonProperty("isPinned")
+    @Column(name = "is_pinned")
     private boolean pinned;
 
     @Column(name = "reminder_time")
