@@ -22,7 +22,7 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     public List<Todo> getAllTodos() {
-        return todoRepository.findAllByOrderByPinnedDescDueDateAsc();
+        return todoRepository.findAllSorted();
     }
 
     @Override
