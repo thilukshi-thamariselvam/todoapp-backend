@@ -7,10 +7,13 @@ import com.example.todoapp.entity.Todo;
 import com.example.todoapp.enums.Status;
 import com.example.todoapp.repository.TodoRepository;
 import com.example.todoapp.service.TodoService;
+import com.example.todoapp.exception.ResourceNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class TodoServiceImpl implements TodoService {
 
@@ -22,31 +25,49 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     public List<Todo> getAllTodos() {
+        log.info("Fetching all todos");
         return todoRepository.findAllSorted();
     }
 
     @Override
     public Todo createTodo(TodoRequestDTO dto) {
+        log.info("Creating new todo with title: {}", dto.getTitle());
         Todo todo = new Todo();
         mapDtoToEntity(dto, todo);
 
         if (todo.getStatus() == null) todo.setStatus(Status.PENDING);
 
-        return todoRepository.save(todo);
+        Todo saved = todoRepository.save(todo);
+        log.info("Todo created successfully with ID: {}", saved.getId());
+        return saved;
     }
 
     @Override
     public Todo updateTodo(String id, TodoRequestDTO dto) {
+        log.info("Updating todo with ID: {}", id);
+
         Todo todo = todoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Todo not found with id: " + id));
+                        .orElseThrow(() -> {
+                            log.error("Todo not found with ID: {}", id);
+                            return new ResourceNotFoundException("Todo not found with id: " + id);
+                        });
 
         mapDtoToEntity(dto, todo);
-        return todoRepository.save(todo);
+        Todo updated = todoRepository.save(todo);
+        log.info("Todo updated successfully");
+        return updated;
     }
 
     @Override
     public void deleteTodo(String id) {
+        log.info("Deleting todo with ID: {}", id);
+
+        if (!todoRepository.existsById(id)) {
+            log.error("Cannot delete. Todo not found with ID: {}", id);
+            throw new ResourceNotFoundException("Todo not found with id: " + id);
+        }
         todoRepository.deleteById(id);
+        log.info("Todo deleted successfully");
     }
 
     private void mapDtoToEntity(TodoRequestDTO dto, Todo todo) {
@@ -65,7 +86,7 @@ public class TodoServiceImpl implements TodoService {
         }
 
         if (dto.getSubTasks() != null) {
-            todo.getSubTasks().clear(); // Clear old for simplicity (or merge logic)
+            todo.getSubTasks().clear();
             for (SubTaskDTO subDto : dto.getSubTasks()) {
                 SubTask subTask = new SubTask(subDto.getTitle(), subDto.isCompleted());
                 todo.addSubTask(subTask);
