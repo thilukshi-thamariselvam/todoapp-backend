@@ -5,8 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TodoRepository extends JpaRepository<Todo, String> {
-    @Query(value = "SELECT * FROM todo t ORDER BY t.is_pinned DESC, t.due_date ASC", nativeQuery = true)
+    @Query(value = "SELECT * FROM todo t WHERE t.is_active = true ORDER BY t.is_pinned DESC, t.due_date ASC", nativeQuery = true)
     List<Todo> findAllSorted();
+
+    Optional<Todo> findByIdAndActiveTrue(String id);
 }

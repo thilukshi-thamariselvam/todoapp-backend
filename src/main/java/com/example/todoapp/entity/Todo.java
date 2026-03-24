@@ -44,6 +44,10 @@ public class Todo {
     @Column(name = "is_pinned")
     private boolean pinned;
 
+    @JsonProperty("isActive")
+    @Column(name = "is_active")
+    private boolean active = true;
+
     @Column(name = "reminder_time")
     private LocalDateTime reminder;
 

@@ -36,6 +36,7 @@ public class TodoServiceImpl implements TodoService {
         mapDtoToEntity(dto, todo);
 
         if (todo.getStatus() == null) todo.setStatus(Status.PENDING);
+        todo.setActive(true);
 
         Todo saved = todoRepository.save(todo);
         log.info("Todo created successfully with ID: {}", saved.getId());
@@ -46,7 +47,7 @@ public class TodoServiceImpl implements TodoService {
     public Todo updateTodo(String id, TodoRequestDTO dto) {
         log.info("Updating todo with ID: {}", id);
 
-        Todo todo = todoRepository.findById(id)
+        Todo todo = todoRepository.findByIdAndActiveTrue(id)
                         .orElseThrow(() -> {
                             log.error("Todo not found with ID: {}", id);
                             return new ResourceNotFoundException("Todo not found with id: " + id);
@@ -60,14 +61,18 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     public void deleteTodo(String id) {
-        log.info("Deleting todo with ID: {}", id);
+        log.info("Soft deleting todo with ID: {}", id);
 
-        if (!todoRepository.existsById(id)) {
-            log.error("Cannot delete. Todo not found with ID: {}", id);
-            throw new ResourceNotFoundException("Todo not found with id: " + id);
-        }
-        todoRepository.deleteById(id);
-        log.info("Todo deleted successfully");
+        Todo todo = todoRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Cannot delete. Todo not found with ID: {}", id);
+                    return new ResourceNotFoundException("Todo not found with id: " + id);
+                });
+
+        todo.setActive(false);
+        todoRepository.save(todo);
+
+        log.info("Todo soft deleted successfully");
     }
 
     private void mapDtoToEntity(TodoRequestDTO dto, Todo todo) {
