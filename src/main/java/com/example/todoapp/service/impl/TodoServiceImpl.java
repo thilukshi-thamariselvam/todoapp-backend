@@ -9,9 +9,15 @@ import com.example.todoapp.repository.TodoRepository;
 import com.example.todoapp.service.TodoService;
 import com.example.todoapp.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.criteria.Predicate;
 
 @Slf4j
 @Service
@@ -24,9 +30,23 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    public List<Todo> getAllTodos() {
-        log.info("Fetching all todos");
-        return todoRepository.findAllSorted();
+    public Page<Todo> getAllTodos(String priority, String status, Pageable pageable) {
+        Specification<Todo> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.isTrue(root.get("active")));
+
+            if (priority != null && !priority.isEmpty()) {
+                predicates.add(cb.equal(root.get("priority"), priority));
+            }
+
+            if (status != null && !status.isEmpty()) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return todoRepository.findAll(spec, pageable);
     }
 
     @Override
@@ -48,10 +68,10 @@ public class TodoServiceImpl implements TodoService {
         log.info("Updating todo with ID: {}", id);
 
         Todo todo = todoRepository.findByIdAndActiveTrue(id)
-                        .orElseThrow(() -> {
-                            log.error("Todo not found with ID: {}", id);
-                            return new ResourceNotFoundException("Todo not found with id: " + id);
-                        });
+                .orElseThrow(() -> {
+                    log.error("Todo not found with ID: {}", id);
+                    return new ResourceNotFoundException("Todo not found with id: " + id);
+                });
 
         mapDtoToEntity(dto, todo);
         Todo updated = todoRepository.save(todo);

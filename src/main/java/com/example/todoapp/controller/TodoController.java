@@ -5,6 +5,10 @@ import com.example.todoapp.entity.Todo;
 import com.example.todoapp.service.TodoService;
 import com.example.todoapp.util.CommonResponse;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,9 +24,19 @@ public class TodoController {
     }
 
     @GetMapping("/")
-    public CommonResponse<List<Todo>> getTodos() {
-        List<Todo> todos = todoService.getAllTodos();
-        return new CommonResponse<>(true, "Todos fetched successfully", todos);
+    public CommonResponse<Page<Todo>> getTodos(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "dueDate") String sort,
+            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) String status
+    ) {
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+        Page<Todo> todosPage = todoService.getAllTodos(priority, status, pageable);
+
+        return new CommonResponse<>(true, "Todos fetched successfully", todosPage);
     }
 
     @PostMapping("/")
