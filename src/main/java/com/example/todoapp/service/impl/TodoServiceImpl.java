@@ -10,7 +10,9 @@ import com.example.todoapp.service.TodoService;
 import com.example.todoapp.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -45,8 +47,15 @@ public class TodoServiceImpl implements TodoService {
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+        Sort pinnedFirstSort = Sort.by(Sort.Order.desc("pinned"));
 
-        return todoRepository.findAll(spec, pageable);
+        Sort userSort = pageable.getSort();
+
+        Sort combinedSort = pinnedFirstSort.and(userSort);
+
+        Pageable customPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), combinedSort);
+
+        return todoRepository.findAll(spec, customPageable);
     }
 
     @Override
