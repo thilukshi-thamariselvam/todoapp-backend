@@ -30,11 +30,12 @@ public class TodoController {
             @RequestParam(defaultValue = "dueDate") String sort,
             @RequestParam(defaultValue = "asc") String direction,
             @RequestParam(required = false) String priority,
-            @RequestParam(required = false) String status
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search
     ) {
         Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-        Page<Todo> todosPage = todoService.getAllTodos(priority, status, pageable);
+        Page<Todo> todosPage = todoService.getAllTodos(priority, status, search, pageable);
 
         return new CommonResponse<>(true, "Todos fetched successfully", todosPage);
     }

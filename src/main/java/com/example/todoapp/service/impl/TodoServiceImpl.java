@@ -32,9 +32,10 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    public Page<Todo> getAllTodos(String priority, String status, Pageable pageable) {
+    public Page<Todo> getAllTodos(String priority, String status, String search, Pageable pageable) {
         Specification<Todo> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+
             predicates.add(cb.isTrue(root.get("active")));
 
             if (priority != null && !priority.isEmpty()) {
@@ -45,14 +46,21 @@ public class TodoServiceImpl implements TodoService {
                 predicates.add(cb.equal(root.get("status"), status));
             }
 
+            if (search != null && !search.isEmpty()) {
+                String searchPattern = "%" + search.toLowerCase() + "%";
+
+                Predicate titlePredicate = cb.like(cb.lower(root.get("title")), searchPattern);
+                Predicate descPredicate = cb.like(cb.lower(root.get("description")), searchPattern);
+
+                predicates.add(cb.or(titlePredicate, descPredicate));
+            }
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+
         Sort pinnedFirstSort = Sort.by(Sort.Order.desc("pinned"));
-
         Sort userSort = pageable.getSort();
-
         Sort combinedSort = pinnedFirstSort.and(userSort);
-
         Pageable customPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), combinedSort);
 
         return todoRepository.findAll(spec, customPageable);

@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface TodoService {
 
-    Page<Todo> getAllTodos(String priority, String status, Pageable pageable);
+    Page<Todo> getAllTodos(String priority, String status, String search, Pageable pageable);
 
     Todo createTodo(TodoRequestDTO dto);
 
