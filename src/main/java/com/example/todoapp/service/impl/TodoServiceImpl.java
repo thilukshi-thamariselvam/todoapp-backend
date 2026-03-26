@@ -34,34 +34,33 @@ public class TodoServiceImpl implements TodoService {
     @Override
     public Page<Todo> getAllTodos(String priority, String status, String search, Pageable pageable) {
         Specification<Todo> spec = (root, query, cb) -> {
+
             List<Predicate> predicates = new ArrayList<>();
-
             predicates.add(cb.isTrue(root.get("active")));
-
-            if (priority != null && !priority.isEmpty()) {
-                predicates.add(cb.equal(root.get("priority"), priority));
-            }
-
-            if (status != null && !status.isEmpty()) {
-                predicates.add(cb.equal(root.get("status"), status));
-            }
-
+            if (priority != null && !priority.isEmpty()) predicates.add(cb.equal(root.get("priority"), priority));
+            if (status != null && !status.isEmpty()) predicates.add(cb.equal(root.get("status"), status));
             if (search != null && !search.isEmpty()) {
                 String searchPattern = "%" + search.toLowerCase() + "%";
-
-                Predicate titlePredicate = cb.like(cb.lower(root.get("title")), searchPattern);
-                Predicate descPredicate = cb.like(cb.lower(root.get("description")), searchPattern);
-
-                predicates.add(cb.or(titlePredicate, descPredicate));
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("title")), searchPattern),
+                        cb.like(cb.lower(root.get("description")), searchPattern)
+                ));
             }
-
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        Sort pinnedFirstSort = Sort.by(Sort.Order.desc("pinned"));
+        Sort pinnedSort = Sort.by(Sort.Order.desc("pinned"));
+        Sort defaultSort = Sort.by(Sort.Direction.DESC, "createdDate");
         Sort userSort = pageable.getSort();
-        Sort combinedSort = pinnedFirstSort.and(userSort);
-        Pageable customPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), combinedSort);
+
+        Sort finalSort;
+        if (userSort.isUnsorted()) {
+            finalSort = pinnedSort.and(defaultSort).and(Sort.by(Sort.Direction.DESC, "updatedDate"));
+        } else {
+            finalSort = pinnedSort.and(userSort).and(Sort.by(Sort.Direction.DESC, "updatedDate"));
+        }
+
+        Pageable customPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), finalSort);
 
         return todoRepository.findAll(spec, customPageable);
     }

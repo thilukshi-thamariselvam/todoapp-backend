@@ -48,6 +48,23 @@ public class Todo {
     @Column(name = "is_active")
     private boolean active = true;
 
+    @Column(name = "created_date", updatable = false)
+    private LocalDateTime createdDate;
+
+    @Column(name = "updated_date")
+    private LocalDateTime updatedDate;
+
+    @PrePersist
+    protected void onCreate() {
+        createdDate = LocalDateTime.now();
+        updatedDate = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedDate = LocalDateTime.now();
+    }
+
     @Column(name = "reminder_time")
     private LocalDateTime reminder;
 
