@@ -46,6 +46,16 @@ public class TodoController {
         return new CommonResponse<>(true, "Todos fetched successfully", todosPage);
     }
 
+    @GetMapping("/{id}")
+    public CommonResponse<Todo> getTodoById(@PathVariable String id) {
+        log.info("Request received to fetch todo by ID: {}", id);
+
+        Todo todo = todoService.getTodoById(id);
+
+        log.info("Successfully fetched todo ID: {}", id);
+        return new CommonResponse<>(true, "Todo fetched successfully", todo);
+    }
+
     @PostMapping("/")
     public CommonResponse<Todo> addTodo(@Valid @RequestBody TodoRequestDTO dto) {
         log.info("Request received to create todo: {}", dto.getTitle());

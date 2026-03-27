@@ -16,4 +16,6 @@ public interface TodoService {
     Todo updateTodo(String id, TodoRequestDTO dto);
 
     void deleteTodo(String id);
+
+    Todo getTodoById(String id);
 }

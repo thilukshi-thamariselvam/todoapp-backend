@@ -111,6 +111,17 @@ public class TodoServiceImpl implements TodoService {
         log.info("Todo soft deleted successfully");
     }
 
+    @Override
+    public Todo getTodoById(String id) {
+        log.info("Fetching todo with ID: {}", id);
+
+        return todoRepository.findByIdAndActiveTrue(id)
+                .orElseThrow(() -> {
+                    log.error("Todo not found with ID: {}", id);
+                    return new ResourceNotFoundException("Todo not found with id: " + id);
+                });
+    }
+
     private void mapDtoToEntity(TodoRequestDTO dto, Todo todo) {
         todo.setTitle(dto.getTitle());
         todo.setDescription(dto.getDescription());
